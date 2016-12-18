@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strings"
 
@@ -15,6 +16,12 @@ var public string
 var private string
 
 const apiPath = "api.secret"
+
+func init() {
+	resp, _ := http.Get("https://api.btcmarkets.net/market/BTC/AUD/orderbook")
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
+}
 
 func init() {
 	getKeys()
