@@ -5,6 +5,9 @@ import (
 	"log"
 )
 
+//Domain is the api base domain
+const Domain = "https://api.btcmarkets.net"
+
 //BTCMarketsClient is primary struct for interacting with the API
 type BTCMarketsClient struct {
 	Public        string
@@ -20,5 +23,5 @@ func NewClient(public, secret string) (*BTCMarketsClient, error) {
 		log.Fatal("error:", err)
 		return nil, err
 	}
-	return &BTCMarketsClient{Public: public, private: secret, decodedSecret: data, Domain: "https://api.btcmarket.net"}, nil
+	return &BTCMarketsClient{Public: public, private: secret, decodedSecret: data, Domain: Domain}, nil
 }
