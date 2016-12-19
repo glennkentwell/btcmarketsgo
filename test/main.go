@@ -27,6 +27,8 @@ func init() {
 }
 
 func main() {
+	print(client.CreateBuyOrder(99900000000, 99900000000))
+
 	//print(client.Tick())
 	//print(client.OrderBook())
 	//print(client.Trades())

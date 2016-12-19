@@ -11,6 +11,9 @@ const DefaultDomain = "https://api.btcmarkets.net"
 //DefaultCurrency is the default currency chosen for a new client
 const DefaultCurrency = "AUD"
 
+//DefaultInstrument is the default currency chosen for a new client
+const DefaultInstrument = "AUD"
+
 //BTCMarketsClient is primary struct for interacting with the API
 type BTCMarketsClient struct {
 	Public        string
@@ -18,6 +21,7 @@ type BTCMarketsClient struct {
 	decodedSecret []byte
 	Domain        string
 	Currency      string
+	Instrument    string
 }
 
 //NewClient gets a new BTCMarketsClient
