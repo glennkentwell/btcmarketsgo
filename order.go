@@ -21,9 +21,9 @@ type OrderRequest struct {
 	Instrument      string `json:"instrument"`
 	Price           int64  `json:"price"`
 	Volume          int64  `json:"volume"`
-	OrderSide       string `json:"orderSide"`
-	OrderType       string `json:"ordertype"`
-	ClientRequestID string `json:"clientRequestId"`
+	OrderSide       string `json:"orderSide"`       //Camel case
+	OrderType       string `json:"ordertype"`       //the lowercase T is important...
+	ClientRequestID string `json:"clientRequestId"` //Camel case
 }
 
 //OrderResponse is the response from submitting an order
