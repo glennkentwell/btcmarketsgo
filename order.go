@@ -89,6 +89,59 @@ func (c BTCMarketsClient) CancelOrder(orderIDs ...int) (CancelOrdersResponse, er
 	return cancelOR, err
 }
 
+//OrderHistoryRequest gets the users order history
+type OrderHistoryRequest struct {
+	Currency   string `json:"currency"`
+	Instrument string `json:"instrument"`
+	Limit      int    `json:"limit"`
+	Since      int64  `json:"since,omitempty"`
+}
+
+//OrderHistoryResponse is the response returned when requesting the history of a user
+type OrderHistoryResponse struct {
+	Success      bool
+	ErrorCode    int
+	ErrorMessage string
+	Orders       []OrderHistorySingleResponse
+}
+
+//OrderHistorySingleResponse is a single order returned from a history request
+type OrderHistorySingleResponse struct {
+	ID              int64
+	Currency        string
+	Instrument      string
+	OrderSide       string
+	OrderType       string
+	CreationTime    int64
+	Status          string
+	ErrorMessage    string
+	Price           int64
+	Volume          int64
+	OpenVolume      int64
+	ClientRequestID string
+	Trades          []OrderHistoryTradeResponse
+}
+
+//OrderHistoryTradeResponse is a single trade from an order in a history request
+type OrderHistoryTradeResponse struct {
+	ID           int64
+	CreationTime int64
+	Description  string
+	Price        int64
+	Volume       int64
+	Fee          int64
+}
+
+//OrderHistory gets the users order history
+func (c BTCMarketsClient) OrderHistory() (OrderHistoryResponse, error) {
+	return c.OrderHistorySince(0)
+}
+
+//OrderHistorySince gets the order history since specified time (Unix time in ms)
+func (c BTCMarketsClient) OrderHistorySince(since int64) (OrderHistoryResponse, error) {
+	return OrderHistoryResponse{}, nil
+}
+
 //CreateBuyOrder creates a buy order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
