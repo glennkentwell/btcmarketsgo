@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -37,9 +36,8 @@ type OrderResponse struct {
 
 //CreateOrder creates an order at specified price and volume
 func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderResponse, error) {
-	client := http.Client{}
+
 	URI := "/order/create"
-	URL := c.Domain + URI
 	or := OrderRequest{
 		Currency:        c.Currency,
 		Instrument:      c.Instrument,
@@ -49,37 +47,13 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderRespo
 		OrderType:       "Limit",
 		ClientRequestID: "1",
 	}
-	body, err := json.Marshal(or)
-	if err != nil {
-		return OrderResponse{}, err
-	}
-	fmt.Println("Posting\n", string(body))
-	now, signature := c.build(URI, string(body))
-	fmt.Println("String signed\n", string(signature))
-	req, err := http.NewRequest("POST", URL, bytes.NewReader(body))
-	if err != nil {
-		return OrderResponse{}, errors.New("Error creating new Request;" + err.Error())
-	}
-	c.setupHeaders(req, now, signature)
-	response, err := client.Do(req)
-	if err != nil {
-		return OrderResponse{}, errors.New("Error doing request;" + err.Error())
-	}
-
-	body, err = ioutil.ReadAll(response.Body)
-	if err != nil {
-		return OrderResponse{}, errors.New("Error reading response;" + err.Error())
-	}
-	if response.StatusCode/100 != 2 {
-		log.Error("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode) + "\n" + string(body))
-		return OrderResponse{}, errors.New("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode))
-	}
+	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
-	err = json.Unmarshal(body, &orderR)
+	err = json.Unmarshal(got, &orderR)
 	if err != nil {
-		return orderR, errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(body))
+		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
-	return orderR, nil
+	return orderR, err
 }
 
 //CreateBuyOrder creates a buy order for the specified price and volume.
@@ -97,3 +71,32 @@ func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64)  (OrderResponse,e
 	return createOrder(Price, Volume, false)
 }
 */
+
+func (c BTCMarketsClient) signAndPost(URI string, i interface{}) ([]byte, error) {
+	body, err := json.Marshal(i)
+	if err != nil {
+		return nil, err
+	}
+	client := http.Client{}
+	now, signature := c.sign(URI, string(body))
+	URL := c.Domain + URI
+	req, err := http.NewRequest("POST", URL, bytes.NewReader(body))
+	if err != nil {
+		return nil, errors.New("Error creating new Request;" + err.Error())
+	}
+	c.setupHeaders(req, now, signature)
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, errors.New("Error doing request;" + err.Error())
+	}
+
+	body, err = ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, errors.New("Error reading response;" + err.Error())
+	}
+	if response.StatusCode/100 != 2 {
+		log.Error("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode) + "\n" + string(body))
+		return nil, errors.New("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode))
+	}
+	return body, err
+}
