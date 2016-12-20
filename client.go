@@ -2,17 +2,18 @@ package btcmarketsgo
 
 import (
 	"encoding/base64"
-	"log"
+
+	log "github.com/Sirupsen/logrus"
 )
 
-//Domain is the default api domain
+//DefaultDomain is the default api domain
 const DefaultDomain = "https://api.btcmarkets.net"
 
 //DefaultCurrency is the default currency chosen for a new client
 const DefaultCurrency = "AUD"
 
 //DefaultInstrument is the default currency chosen for a new client
-const DefaultInstrument = "AUD"
+const DefaultInstrument = "BTC"
 
 //BTCMarketsClient is primary struct for interacting with the API
 type BTCMarketsClient struct {
@@ -37,5 +38,6 @@ func NewClient(public, secret string) (*BTCMarketsClient, error) {
 		decodedSecret: data,
 		Domain:        DefaultDomain,
 		Currency:      DefaultCurrency,
+		Instrument:    DefaultInstrument,
 	}, nil
 }

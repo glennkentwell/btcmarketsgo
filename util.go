@@ -15,7 +15,7 @@ func getBody(request string) ([]byte, error) {
 }
 
 func (c BTCMarketsClient) setupHeaders(req *http.Request, timestamp int64, signature string) {
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Charset", "UTF-8")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("apikey", c.Public)
