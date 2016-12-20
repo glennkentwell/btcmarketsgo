@@ -34,9 +34,29 @@ type OrderResponse struct {
 	ClientRequestID string
 }
 
+//CancelOrdersRequest is the struct used to request the cancelation of an order(s)
+type CancelOrdersRequest struct {
+	OrderIds []int `json:"orderIds"`
+}
+
+//CancelOrdersResponse is the response received when canceling an order(s)
+type CancelOrdersResponse struct {
+	Success      bool
+	ErrorCode    int
+	ErrorMessage string
+	Responses    []CancelOrderResponse
+}
+
+//CancelOrderResponse is the individual order cancelation response
+type CancelOrderResponse struct {
+	Success      bool
+	ErrorCode    int
+	ErrorMessage string
+	ID           int
+}
+
 //CreateOrder creates an order at specified price and volume
 func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderResponse, error) {
-
 	URI := "/order/create"
 	or := OrderRequest{
 		Currency:        c.Currency,
@@ -54,6 +74,19 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderRespo
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
 	return orderR, err
+}
+
+//CancelOrder requests the cancelation of an order(s)
+func (c BTCMarketsClient) CancelOrder(orderIDs ...int) (CancelOrdersResponse, error) {
+	URI := "/order/cancel"
+	cor := CancelOrdersRequest{OrderIds: orderIDs}
+	got, err := c.signAndPost(URI, cor)
+	var cancelOR CancelOrdersResponse
+	err = json.Unmarshal(got, &cancelOR)
+	if err != nil {
+		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
+	}
+	return cancelOR, err
 }
 
 //CreateBuyOrder creates a buy order for the specified price and volume.
