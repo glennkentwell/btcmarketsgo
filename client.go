@@ -17,8 +17,8 @@ const DefaultInstrument = "BTC"
 
 //BTCMarketsClient is primary struct for interacting with the API
 type BTCMarketsClient struct {
-	Public        string
-	private       string
+	Public string
+	//private       string
 	decodedSecret []byte
 	Domain        string
 	Currency      string
@@ -33,8 +33,8 @@ func NewClient(public, secret string) (*BTCMarketsClient, error) {
 		return nil, err
 	}
 	return &BTCMarketsClient{
-		Public:        public,
-		private:       secret,
+		Public: public,
+		//private:       secret,
 		decodedSecret: data,
 		Domain:        DefaultDomain,
 		Currency:      DefaultCurrency,
