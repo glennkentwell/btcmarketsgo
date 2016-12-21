@@ -26,18 +26,22 @@ type BTCMarketsClient struct {
 }
 
 //NewClient gets a new BTCMarketsClient
-func NewClient(public, secret string) (*BTCMarketsClient, error) {
+func NewClient(public, secret, domain, currency, instrument string) (*BTCMarketsClient, error) {
 	data, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		log.Fatal("error:", err)
 		return nil, err
 	}
 	return &BTCMarketsClient{
-		Public: public,
-		//private:       secret,
+		Public:        public,
 		decodedSecret: data,
-		Domain:        DefaultDomain,
-		Currency:      DefaultCurrency,
-		Instrument:    DefaultInstrument,
+		Domain:        domain,
+		Currency:      currency,
+		Instrument:    instrument,
 	}, nil
+}
+
+//NewDefaultClient gets a new client with default settings.
+func NewDefaultClient(public, secret string) (*BTCMarketsClient, error) {
+	return NewClient(public, secret, DefaultDomain, DefaultCurrency, DefaultInstrument)
 }

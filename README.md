@@ -13,3 +13,8 @@ Private key here
 ```
 
 There should only be two lines in the file, the API key and the private key.
+
+The keys.go file can be used as a standalone to aid with setup of keys. Where as main is more of an example to help.
+
+### Monitoring
+A ticker has been setup for monitoring the price of BTC (or other instrument specified)
