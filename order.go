@@ -133,13 +133,67 @@ type OrderHistoryTradeResponse struct {
 }
 
 //OrderHistory gets the users order history
-func (c BTCMarketsClient) OrderHistory() (OrderHistoryResponse, error) {
-	return c.OrderHistorySince(0)
+func (c BTCMarketsClient) OrderHistory(limit int) (OrderHistoryResponse, error) {
+	return c.OrderHistorySince(limit, 0)
 }
 
 //OrderHistorySince gets the order history since specified time (Unix time in ms)
-func (c BTCMarketsClient) OrderHistorySince(since int64) (OrderHistoryResponse, error) {
-	return OrderHistoryResponse{}, nil
+func (c BTCMarketsClient) OrderHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
+	return c.orderHistory(limit, since, 0)
+}
+
+//mode;
+//0 Open order history
+//1 All order history
+//2 Trade history
+func (c BTCMarketsClient) orderHistory(limit int, since int64, mode int) (OrderHistoryResponse, error) {
+	var URI string
+	switch mode {
+	case 0:
+		URI = "/order/open"
+		break
+	case 1:
+		URI = "/order/history"
+		break
+	case 2:
+		URI = "/order/trade/history"
+		break
+	default:
+		return OrderHistoryResponse{}, errors.New("mode somehow set incorrectly in private function")
+	}
+	ohr := OrderHistoryRequest{
+		Currency:   c.Currency,
+		Instrument: c.Instrument,
+		Limit:      limit,
+		Since:      since,
+	}
+	got, err := c.signAndPost(URI, ohr)
+	var ohs OrderHistoryResponse
+	err = json.Unmarshal(got, &ohs)
+	if err != nil {
+		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
+	}
+	return ohs, err
+}
+
+//OpenOrderHistory gets the users current open orders
+func (c BTCMarketsClient) OpenOrderHistory(limit int) (OrderHistoryResponse, error) {
+	return c.OpenOrderHistorySince(limit, 0)
+}
+
+//OpenOrderHistorySince gets the users current open orders since the specified time (Unix time ms)
+func (c BTCMarketsClient) OpenOrderHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
+	return c.orderHistory(limit, since, 1)
+}
+
+//TradeHistory gets the current trade history
+func (c BTCMarketsClient) TradeHistory(limit int) (OrderHistoryResponse, error) {
+	return c.TradeHistorySince(limit, 0)
+}
+
+//TradeHistorySince gets the current trade history since the time specified (Unix ms)
+func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
+	return c.orderHistory(limit, since, 2)
 }
 
 //CreateBuyOrder creates a buy order for the specified price and volume.
@@ -147,6 +201,23 @@ func (c BTCMarketsClient) OrderHistorySince(since int64) (OrderHistoryResponse, 
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
 func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, error) {
 	return c.createOrder(Price, Volume, true)
+}
+
+//OrderDetailsRequest is the struct used to request the details for order(s)
+type OrderDetailsRequest CancelOrdersRequest
+
+//OrdersDetails gets the details of the specified orders
+func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrderDetailsRequest, error) {
+	URI := "/order/cancel"
+	cor := OrderDetailsRequest{OrderIds: orderIDs}
+	got, err := c.signAndPost(URI, cor)
+	//var odr OrderDetailsRequest
+	//err = json.Unmarshal(got, &odr)
+	log.Info("MAKE STRUCT FOR ME:\n", string(got))
+	if err != nil {
+		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
+	}
+	return OrderDetailsRequest{}, err
 }
 
 /*
