@@ -8,18 +8,14 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-var public string
-var private string
 var client *btcmarketsgo.BTCMarketsClient
 
 func init() {
-	public, private = getKeys()
-}
-
-func init() {
+	public, private := btcmarketsgo.GetKeys("api.secret")
 	var err error
+	//Could pass keys directly through, but abstracted for clarity
 	client, err = btcmarketsgo.NewDefaultClient(public, private)
-	//overwrite private here TODO
+	//overwrite private here TODO (this won't need to be done if keys passed directly)
 	if err != nil {
 		log.Fatal(err)
 	}

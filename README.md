@@ -14,7 +14,23 @@ Private key here
 
 There should only be two lines in the file, the API key and the private key.
 
-The keys.go file can be used as a standalone to aid with setup of keys. Where as main is more of an example to help.
+ **Please note your keys should be kept private, use a file at your own risk**
+
+
 
 ### Monitoring
-A ticker has been setup for monitoring the price of BTC (or other instrument specified)
+A ticker wrapper has been added for ease of action on price changes. A simple stdout printer is included in the example, a more complex example would be to send email on large price changes.
+
+### Buying/Selling
+
+Price and volume when buying or selling are both \*10^-8, as specified in the BTCMarkets API;
+
+`$12.34 = 1,234,000,000; 12.34BTC=1,234,000,000`
+
+
+
+
+
+
+------------
+Software is provided as-is, I'm not responsible for anything stupid you do or anything that goes wrong.
