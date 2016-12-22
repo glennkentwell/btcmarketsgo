@@ -27,11 +27,13 @@ func main() {
 	//print(client.Tick())
 	//print(client.OrderBook())
 	//print(client.Trades())
+	quit := make(chan bool)
 	client.Ticker(func(tr btcmarketsgo.TickResponse, err error) {
 		fmt.Printf("%+v\n", tr)
-	}, time.Second*10)
-	for {
-	}
+	}, time.Second*10, quit)
+	time.Sleep(time.Second * 5 * 10)
+	quit <- true
+	log.Info("quit")
 }
 
 func print(got interface{}, err error) {
