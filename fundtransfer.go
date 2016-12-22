@@ -5,12 +5,6 @@ import (
 	"errors"
 )
 
-//response
-//{"success":true,"errorCode":null,"errorMessage":null,"status":"Pending Authorization"}
-
-//request
-//{"amount":10000000,"address":"1EJKj147QmEzywLnLpuxSr6SoPr1p62VBX","currency":"BTC"}
-
 //WithdrawRequest is the request built when attempting to withdraw
 type WithdrawRequest struct {
 	Amount   int64  `json:"amount"`
