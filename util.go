@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -29,9 +30,11 @@ func (c BTCMarketsClient) sign(URI, body string) (int64, string) {
 }
 
 func (c BTCMarketsClient) hashEncode(message string) string {
+	fmt.Println("SIGNING:\n" + message + "\nSIGNED")
 	mac := hmac.New(sha512.New, c.decodedSecret)
 	mac.Write([]byte(message))
 	data := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	fmt.Println(data + "\nSIGNED")
 	return data
 }
 
