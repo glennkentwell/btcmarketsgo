@@ -95,7 +95,7 @@ type OrderHistoryRequest struct {
 	Currency   string `json:"currency"`
 	Instrument string `json:"instrument"`
 	Limit      int    `json:"limit"`
-	Since      int64  `json:"since,omitempty"`
+	Since      int64  `json:"since"`
 }
 
 //OrderHistoryResponse is the response returned when requesting the history of a user
@@ -140,7 +140,7 @@ func (c BTCMarketsClient) OrderHistory(limit int) (OrderHistoryResponse, error) 
 
 //OrderHistorySince gets the order history since specified time (Unix time in ms)
 func (c BTCMarketsClient) OrderHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
-	return c.orderHistory(limit, since, 0)
+	return c.orderHistory(limit, since, 1)
 }
 
 //mode;
