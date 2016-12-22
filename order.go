@@ -59,9 +59,14 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderRespo
 		Instrument:      c.Instrument,
 		Price:           Price,
 		Volume:          Volume,
-		OrderSide:       "Bid",
-		OrderType:       "Limit",
 		ClientRequestID: "1",
+	}
+	if Buy {
+		or.OrderSide = "Bid"
+		or.OrderType = "Limit"
+	} else {
+		or.OrderSide = "Ask"
+		or.OrderType = "Market"
 	}
 	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
@@ -216,11 +221,9 @@ func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrderDetailsRequest, e
 	return OrderDetailsRequest{}, err
 }
 
-/*
 //CreateSellOrder creates a sell order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64)  (OrderResponse,error)  {
-	return createOrder(Price, Volume, false)
+func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64) (OrderResponse, error) {
+	return c.createOrder(Price, Volume, false)
 }
-*/
