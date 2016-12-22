@@ -3,8 +3,6 @@ package btcmarketsgo
 import (
 	"encoding/json"
 	"errors"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 //OrderStatuses is the current available order statuses
@@ -52,7 +50,7 @@ type CancelOrderResponse struct {
 }
 
 //CreateOrder creates an order at specified price and volume
-func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool) (OrderResponse, error) {
+func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool) (OrderResponse, error) {
 	URI := "/order/create"
 	or := OrderRequest{
 		Currency:        c.Currency,
@@ -197,33 +195,70 @@ func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (OrderHistor
 	return c.orderHistory(limit, since, 2)
 }
 
+//OrderDetailsRequest is the struct used to request the details for order(s)
+type OrderDetailsRequest CancelOrdersRequest
+
+//OrdersDetailsResponse is the response recieved from order details requests
+type OrdersDetailsResponse struct {
+	Success      bool
+	ErrorCode    int
+	ErrorMessage string
+	Orders       []OrderDetailsResponse
+}
+
+//OrderDetailsResponse is the details returned from a single order
+type OrderDetailsResponse struct {
+	ID           int
+	Currency     string
+	Instrument   string
+	OrderSide    string
+	OrderType    string
+	CreationTime int64
+	Status       string
+	ErrorMessage string
+	Price        int64
+	Volume       int64
+	OpenVolume   int64
+	Trades       []OrderHistoryTradeResponse
+}
+
+//OrdersDetails gets the details of the specified orders
+func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse, error) {
+	URI := "/order/detail"
+	cor := OrderDetailsRequest{OrderIds: orderIDs}
+	got, err := c.signAndPost(URI, cor)
+	var odr OrdersDetailsResponse
+	err = json.Unmarshal(got, &odr)
+	if err != nil {
+		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
+	}
+	return OrdersDetailsResponse{}, err
+}
+
 //CreateBuyOrder creates a buy order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
 func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, error) {
-	return c.createOrder(Price, Volume, true)
+	return c.createOrder(Price, Volume, true, false)
 }
 
-//OrderDetailsRequest is the struct used to request the details for order(s)
-type OrderDetailsRequest CancelOrdersRequest
-
-//OrdersDetails gets the details of the specified orders
-func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrderDetailsRequest, error) {
-	URI := "/order/cancel"
-	cor := OrderDetailsRequest{OrderIds: orderIDs}
-	got, err := c.signAndPost(URI, cor)
-	//var odr OrderDetailsRequest
-	//err = json.Unmarshal(got, &odr)
-	log.Info("MAKE STRUCT FOR ME:\n", string(got))
-	if err != nil {
-		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
-	}
-	return OrderDetailsRequest{}, err
+//CreateMarketBuyOrder creates a buy order for the specified price and volume.
+// Price and volume are both *10^-8, as specified in the BTCMarkets API;
+// ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
+func (c BTCMarketsClient) CreateMarketBuyOrder(Price, Volume int64) (OrderResponse, error) {
+	return c.createOrder(Price, Volume, true, true)
 }
 
 //CreateSellOrder creates a sell order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
 func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64) (OrderResponse, error) {
-	return c.createOrder(Price, Volume, false)
+	return c.createOrder(Price, Volume, false, false)
+}
+
+//CreateMarketSellOrder creates a sell order for the specified price and volume.
+// Price and volume are both *10^-8, as specified in the BTCMarkets API;
+// ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
+func (c BTCMarketsClient) CreateMarketSellOrder(Price, Volume int64) (OrderResponse, error) {
+	return c.createOrder(Price, Volume, false, true)
 }

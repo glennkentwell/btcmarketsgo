@@ -45,14 +45,27 @@ func (c BTCMarketsClient) setupHeaders(req *http.Request, timestamp int64, signa
 }
 
 func (c BTCMarketsClient) signAndPost(URI string, i interface{}) ([]byte, error) {
-	body, err := json.Marshal(i)
-	if err != nil {
-		return nil, err
+	return c.signAnd(URI, i, "POST")
+}
+func (c BTCMarketsClient) signAndGet(URI string) ([]byte, error) {
+	return c.signAnd(URI, nil, "GET")
+}
+
+func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte, error) {
+	var body []byte
+	var err error
+	if i != nil {
+		body, err = json.Marshal(i)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		body = []byte("")
 	}
 	client := http.Client{}
 	now, signature := c.sign(URI, string(body))
 	URL := c.Domain + URI
-	req, err := http.NewRequest("POST", URL, bytes.NewReader(body))
+	req, err := http.NewRequest(do, URL, bytes.NewReader(body))
 	if err != nil {
 		return nil, errors.New("Error creating new Request;" + err.Error())
 	}
