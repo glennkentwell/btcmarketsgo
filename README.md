@@ -1,4 +1,4 @@
-# btcmarkets-go
+# btcmarketsgo
 Golang btcmarkets api client
 
 ## How to use
