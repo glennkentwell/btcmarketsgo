@@ -211,7 +211,9 @@ func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (OrderHistor
 }
 
 //OrderDetailsRequest is the struct used to request the details for order(s)
-type OrderDetailsRequest CancelOrdersRequest
+type OrderDetailsRequest struct {
+	OrderIds []int `json:"orderIds"`
+}
 
 //OrdersDetailsResponse is the response recieved from order details requests
 type OrdersDetailsResponse struct {
