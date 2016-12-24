@@ -22,20 +22,23 @@ func init() {
 }
 
 func main() {
-	print(client.CreateBuyOrder(99900000000, 99900000000))
+	got, err := client.CreateBuyOrder(99900000000, 99900000000)
+	print(got, err)
+	print(client.OrdersDetails(got.ID))
+	print(client.Tick())
+	print(client.OrderBook())
+	print(client.Trades())
+	print(client.CancelOrder(got.ID))
+	print(client.OrdersDetails(got.ID))
 
-	//print(client.Tick())
-	//print(client.OrderBook())
-	//print(client.Trades())
-
-	if false {
-		quit := make(chan bool)
-		client.Ticker(func(tr btcmarketsgo.TickResponse, err error) {
-			fmt.Printf("%+v\n", tr)
-		}, time.Second*10, quit)
-		time.Sleep(time.Second * 5 * 10)
-		quit <- true
-	}
+	//Ticker example
+	quit := make(chan bool)
+	client.Ticker(func(tr btcmarketsgo.TickResponse, err error) {
+		fmt.Printf("%+v\n", tr)
+	}, time.Second, quit)
+	log.Info("quiting after 50 seconds")
+	time.Sleep(time.Second * 5 * 10)
+	quit <- true
 	log.Info("quit")
 }
 
