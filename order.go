@@ -61,10 +61,13 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool
 	}
 	if Buy {
 		or.OrderSide = "Bid"
-		or.OrderType = "Limit"
 	} else {
 		or.OrderSide = "Ask"
+	}
+	if Market {
 		or.OrderType = "Market"
+	} else {
+		or.OrderType = "Limit"
 	}
 	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
