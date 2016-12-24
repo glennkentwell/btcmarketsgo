@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -62,6 +63,7 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 	} else {
 		body = []byte("")
 	}
+	fmt.Println(string(body))
 	client := http.Client{}
 	now, signature := c.sign(URI, string(body))
 	URL := c.Domain + URI
