@@ -3,6 +3,7 @@ package btcmarketsgo
 import (
 	"encoding/json"
 	"errors"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -31,4 +32,19 @@ func (c BTCMarketsClient) GetBalances() (BalancesResponse, error) {
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
 	return br, err
+}
+
+//GetBalance gets the balance of a single currency
+func (c BTCMarketsClient) GetBalance(currency string) (BalanceResponse, error) {
+	got, err := c.GetBalances()
+	if err != nil {
+		return BalanceResponse{}, err
+	}
+	currency = strings.ToUpper(strings.TrimSpace(currency))
+	for _, b := range got {
+		if currency == b.Currency {
+			return b, nil
+		}
+	}
+	return BalanceResponse{}, errors.New("Currency " + currency + " not found")
 }
