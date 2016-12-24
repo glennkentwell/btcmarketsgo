@@ -3,7 +3,12 @@ package btcmarketsgo
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strconv"
 )
+
+const btcMin = int64(100000)
+const multiplier = int64(100000000)
 
 //OrderStatuses is the current available order statuses
 //const OrderStatuses = []string{"New", "Placed", "Failed", "Error", "Cancelled",	"Partially Canceled", "Fully Matched", "Partially Matched"}
@@ -12,8 +17,8 @@ import (
 type OrderRequest struct {
 	Currency        string `json:"currency"`
 	Instrument      string `json:"instrument"`
-	Price           int64  `json:"price,omitempty"`
-	Volume          int64  `json:"volume,omitempty"`
+	Price           int64  `json:"price"`
+	Volume          int64  `json:"volume"`
 	OrderSide       string `json:"orderSide"`       //Camel case
 	OrderType       string `json:"ordertype"`       //the lowercase T is important...
 	ClientRequestID string `json:"clientRequestId"` //Camel case
@@ -51,6 +56,13 @@ type CancelOrderResponse struct {
 
 //CreateOrder creates an order at specified price and volume
 func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool) (OrderResponse, error) {
+	if Volume < btcMin {
+		return OrderResponse{}, errors.New(
+			fmt.Sprint("Volume must be ", btcMin, " minimum (", strconv.FormatFloat(
+				float64(btcMin)/float64(multiplier), 'f', 3, 64)+"BTC)",
+			),
+		)
+	}
 	URI := "/order/create"
 	or := OrderRequest{
 		Currency:        c.Currency,
@@ -248,9 +260,9 @@ func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, er
 //CreateMarketBuyOrder creates a buy order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-//func (c BTCMarketsClient) CreateMarketBuyOrder(Price, Volume int64) (OrderResponse, error) {
-//	return c.createOrder(Price, Volume, true, true)
-//}
+func (c BTCMarketsClient) CreateMarketBuyOrder(Volume int64) (OrderResponse, error) {
+	return c.createOrder(0, Volume, true, true)
+}
 
 //CreateSellOrder creates a sell order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
@@ -262,6 +274,6 @@ func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64) (OrderResponse, e
 //CreateMarketSellOrder creates a sell order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-//func (c BTCMarketsClient) CreateMarketSellOrder(Price, Volume int64) (OrderResponse, error) {
-//	return c.createOrder(Price, Volume, false, true)
-//}
+func (c BTCMarketsClient) CreateMarketSellOrder(Volume int64) (OrderResponse, error) {
+	return c.createOrder(0, Volume, false, true)
+}
