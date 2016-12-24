@@ -1,5 +1,13 @@
 # btcmarketsgo
 Golang btcmarkets api client
+## Donate
+Currency|Address
+---|---
+BTC | 1nUFrmrDCCmN6QNzXtfk3qN4w5jW2z9Sq
+ZEC | t1c1YqjVd81HY3ALYE9oRWeR3pQAf6YwbhC
+ETH | 0x9627ae1ab10a7172e7e25c167cb4f36d37ffdf08
+LTC | LN6NQpqCJTpb2PKsP896JiPpdnvaHvKGEo
+
 
 ## How to use
 
