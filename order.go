@@ -243,7 +243,6 @@ type OrderDetailsResponse struct {
 func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse, error) {
 	URI := "/order/detail"
 	cor := OrderDetailsRequest{OrderIds: orderIDs}
-	fmt.Printf("%+v\n", cor)
 	got, err := c.signAndPost(URI, cor)
 	var odr OrdersDetailsResponse
 	err = json.Unmarshal(got, &odr)
