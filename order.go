@@ -248,8 +248,8 @@ func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, er
 //CreateMarketBuyOrder creates a buy order for the specified price and volume.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateMarketBuyOrder(Price, Volume int64) (OrderResponse, error) {
-	return c.createOrder(Price, Volume, true, true)
+func (c BTCMarketsClient) CreateMarketBuyOrder(Price int64) (OrderResponse, error) {
+	return c.createOrder(Price, 0, true, true)
 }
 
 //CreateSellOrder creates a sell order for the specified price and volume.
