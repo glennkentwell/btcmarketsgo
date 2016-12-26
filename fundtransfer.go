@@ -22,8 +22,12 @@ type WithdrawResponse struct {
 	Status       string
 }
 
+//GetDigitalCurrencyDepositAddress gets the deposit address for a digital currency
 func (c BTCMarketsClient) GetDigitalCurrencyDepositAddress(Currency string) (ccg.CurrencyAddress, error) {
-
+	if i := lookupIndex(Currency); i >= 0 {
+		return ccg.CurrencyAddress{DepositAddress: c.Addresses[i].Address}, nil
+	}
+	return ccg.CurrencyAddress{}, errors.New("Could not find currency")
 }
 
 //Withdraw withdraws the specified currency (and amount) to the specified BTC address.
@@ -41,6 +45,7 @@ func (c BTCMarketsClient) Withdraw(amount int64, to string, currency string) (Wi
 	return response, err
 }
 
+//WithdrawCurrency withdraws the specified currency to the specified address
 func (c BTCMarketsClient) WithdrawCurrency(Currency, to string, amount int64) error {
 
 }

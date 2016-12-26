@@ -21,7 +21,7 @@ type TickResponse struct {
 
 //DefaultTick get current tick details
 func (c BTCMarketsClient) DefaultTick() (tr TickResponse, err error) {
-	all, err := getBody(c.Domain + "/market/BTC/" + c.Currency + "/tick")
+	all, err := getBody(c.Domain + "/market/" + "BTC" + "/" + "AUD" + "/tick")
 	if err != nil {
 		return
 	}

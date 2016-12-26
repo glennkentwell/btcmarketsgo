@@ -111,6 +111,10 @@ func (c BTCMarketsClient) CancelOrder(orderID int) error {
 	if err != nil {
 		return err
 	}
+	if !got.Success {
+		return errors.New("Cancel was not successful; " + got.ErrorMessage)
+	}
+	return nil
 }
 
 //OrderHistoryRequest gets the users order history

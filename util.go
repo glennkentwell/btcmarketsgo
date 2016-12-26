@@ -85,3 +85,21 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 	}
 	return body, err
 }
+
+func lookup(sl []string, cur string) int {
+	for i, s := range sl {
+		if s == cur {
+			return i
+		}
+	}
+	return -1
+}
+
+func lookupIndex(cur string) int {
+	for i, s := range DefaultCurrencies {
+		if s.Currency == cur {
+			return i
+		}
+	}
+	return -1
+}

@@ -19,7 +19,10 @@ type BalanceResponse struct {
 //BalancesResponse is the response from requestiong balances
 type BalancesResponse []BalanceResponse
 
-func (c BTCMarketsClient) GetAccountCurrencies() ([]string, error) {}
+//GetAccountCurrencies gets the account currencies available
+func (c BTCMarketsClient) GetAccountCurrencies() ([]string, error) {
+	return c.Currencies, nil
+}
 
 //GetBalances gets the account balances
 func (c BTCMarketsClient) GetBalances() (ccg.AccountBalances, error) {
