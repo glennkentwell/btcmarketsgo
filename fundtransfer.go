@@ -3,6 +3,8 @@ package btcmarketsgo
 import (
 	"encoding/json"
 	"errors"
+
+	ccg "github.com/RyanCarrier/cryptoclientgo"
 )
 
 //WithdrawRequest is the request built when attempting to withdraw
@@ -20,6 +22,10 @@ type WithdrawResponse struct {
 	Status       string
 }
 
+func (c BTCMarketsClient) GetDigitalCurrencyDepositAddress(Currency string) (ccg.CurrencyAddress, error) {
+
+}
+
 //Withdraw withdraws the specified currency (and amount) to the specified BTC address.
 // amount is *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
@@ -33,4 +39,8 @@ func (c BTCMarketsClient) Withdraw(amount int64, to string, currency string) (Wi
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
 	return response, err
+}
+
+func (c BTCMarketsClient) WithdrawCurrency(Currency, to string, amount int64) error {
+
 }

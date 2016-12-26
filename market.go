@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strconv"
 	"time"
+
+	ccg "github.com/RyanCarrier/cryptoclientgo"
 )
 
 //TickResponse is the response recieved when requesting market tick
@@ -17,9 +19,19 @@ type TickResponse struct {
 	Volume24h  float64
 }
 
-//Tick get current tick details
-func (c BTCMarketsClient) Tick() (tr TickResponse, err error) {
+//DefaultTick get current tick details
+func (c BTCMarketsClient) DefaultTick() (tr TickResponse, err error) {
 	all, err := getBody(c.Domain + "/market/BTC/" + c.Currency + "/tick")
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(all, &tr)
+	return
+}
+
+//Tick get current tick details
+func (c BTCMarketsClient) Tick(CurrencyFrom, CurrencyTo string) (tr ccg.Tick, err error) {
+	all, err := getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/tick")
 	if err != nil {
 		return
 	}

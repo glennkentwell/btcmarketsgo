@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	ccg "github.com/RyanCarrier/cryptoclientgo"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -18,13 +19,15 @@ type BalanceResponse struct {
 //BalancesResponse is the response from requestiong balances
 type BalancesResponse []BalanceResponse
 
+func (c BTCMarketsClient) GetAccountCurrencies() ([]string, error) {}
+
 //GetBalances gets the account balances
-func (c BTCMarketsClient) GetBalances() (BalancesResponse, error) {
+func (c BTCMarketsClient) GetBalances() (ccg.AccountBalances, error) {
 	URI := "/account/balance"
 	got, err := c.signAndGet(URI)
 	if err != nil {
 		log.Error("Error getting balance", err)
-		return BalancesResponse{}, err
+		return ccg.AccountBalances{}, err
 	}
 	var br BalancesResponse
 	err = json.Unmarshal(got, &br)
@@ -35,10 +38,10 @@ func (c BTCMarketsClient) GetBalances() (BalancesResponse, error) {
 }
 
 //GetBalance gets the balance of a single currency
-func (c BTCMarketsClient) GetBalance(currency string) (BalanceResponse, error) {
+func (c BTCMarketsClient) GetBalance(currency string) (ccg.AccountBalance, error) {
 	got, err := c.GetBalances()
 	if err != nil {
-		return BalanceResponse{}, err
+		return ccg.AccountBalance{}, err
 	}
 	currency = strings.ToUpper(strings.TrimSpace(currency))
 	for _, b := range got {
@@ -46,5 +49,5 @@ func (c BTCMarketsClient) GetBalance(currency string) (BalanceResponse, error) {
 			return b, nil
 		}
 	}
-	return BalanceResponse{}, errors.New("Currency " + currency + " not found")
+	return ccg.AccountBalance{}, errors.New("Currency " + currency + " not found")
 }
