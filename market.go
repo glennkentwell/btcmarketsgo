@@ -49,8 +49,8 @@ type OrderBookResponse struct {
 }
 
 //OrderBook gets the current orderbook
-func (c BTCMarketsClient) OrderBook() (obr OrderBookResponse, err error) {
-	all, err := getBody(c.Domain + "/market/BTC/" + c.Currency + "/orderbook")
+func (c BTCMarketsClient) OrderBook(CurrencyFrom, CurrencyTo string) (obr OrderBookResponse, err error) {
+	all, err := getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/orderbook")
 	if err != nil {
 		return
 	}
@@ -70,17 +70,17 @@ type TradeResponse struct {
 type TradesResponse []TradeResponse
 
 //Trades gets the current trades
-func (c BTCMarketsClient) Trades() (TradesResponse, error) {
-	return c.TradesSince(time.Time{})
+func (c BTCMarketsClient) Trades(CurrencyFrom, CurrencyTo string) (TradesResponse, error) {
+	return c.TradesSince(CurrencyFrom, CurrencyTo, time.Time{})
 }
 
 //TradesSince gets the current trades since the specified time
-func (c BTCMarketsClient) TradesSince(since time.Time) (tr TradesResponse, err error) {
+func (c BTCMarketsClient) TradesSince(CurrencyFrom, CurrencyTo string, since time.Time) (tr TradesResponse, err error) {
 	var all []byte
 	if since.Equal(time.Time{}) {
-		all, err = getBody(c.Domain + "/market/BTC/" + c.Currency + "/trades")
+		all, err = getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/trades")
 	} else {
-		all, err = getBody(c.Domain + "/market/BTC/" + c.Currency + "/trades?since=" + strconv.FormatInt(since.Unix(), 10))
+		all, err = getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/trades?since=" + strconv.FormatInt(since.Unix(), 10))
 	}
 	if err != nil {
 		return

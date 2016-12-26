@@ -57,7 +57,7 @@ type CancelOrderResponse struct {
 }
 
 //CreateOrder creates an order at specified price and volume
-func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool) (OrderResponse, error) {
+func (c BTCMarketsClient) createOrder(CurrencyFrom, CurrencyTo string, Price, Volume int64, Buy bool, Market bool) (OrderResponse, error) {
 	if Volume < btcMin {
 		return OrderResponse{}, errors.New(
 			fmt.Sprint("Volume must be ", btcMin, " minimum (", strconv.FormatFloat(
@@ -67,8 +67,8 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool
 	}
 	URI := "/order/create"
 	or := OrderRequest{
-		Currency:        c.Currency,
-		Instrument:      c.Instrument,
+		CurrencyFrom:    CurrencyFrom,
+		CurrencyTo:      CurrencyTo,
 		Price:           Price,
 		Volume:          Volume,
 		ClientRequestID: "1",
@@ -119,10 +119,10 @@ func (c BTCMarketsClient) CancelOrder(orderID int) error {
 
 //OrderHistoryRequest gets the users order history
 type OrderHistoryRequest struct {
-	Currency   string `json:"currency"`
-	Instrument string `json:"instrument"`
-	Limit      int    `json:"limit"`
-	Since      int64  `json:"since"`
+	SecondaryCurrency string `json:"currency"`
+	PrimaryCurrency   string `json:"instrument"`
+	Limit             int    `json:"limit"`
+	Since             int64  `json:"since"`
 }
 
 //OrderHistoryResponse is the response returned when requesting the history of a user
@@ -161,20 +161,20 @@ type OrderHistoryTradeResponse struct {
 }
 
 //OrderHistory gets the users order history
-func (c BTCMarketsClient) OrderHistory(limit int) (OrderHistoryResponse, error) {
-	return c.OrderHistorySince(limit, 0)
+func (c BTCMarketsClient) OrderHistory(PrimaryCurrency, SecondaryCurrency string, limit int) (ccg.OrdersDetails, error) {
+	return c.OrderHistorySince(PrimaryCurrency, SecondaryCurrency, limit, 0)
 }
 
 //OrderHistorySince gets the order history since specified time (Unix time in ms)
-func (c BTCMarketsClient) OrderHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
-	return c.orderHistory(limit, since, 1)
+func (c BTCMarketsClient) OrderHistorySince(PrimaryCurrency, SecondaryCurrency string, limit int, since int64) (ccg.OrdersDetails, error) {
+	return c.orderHistory(PrimaryCurrency, SecondaryCurrency, limit, since, 1)
 }
 
 //mode;
 //0 Open order history
 //1 All order history
 //2 Trade history
-func (c BTCMarketsClient) orderHistory(limit int, since int64, mode int) (OrderHistoryResponse, error) {
+func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string, limit int, since int64, mode int) (ccg.OrdersDetails, error) {
 	var URI string
 	switch mode {
 	case 0:
@@ -187,13 +187,13 @@ func (c BTCMarketsClient) orderHistory(limit int, since int64, mode int) (OrderH
 		URI = "/order/trade/history"
 		break
 	default:
-		return OrderHistoryResponse{}, errors.New("mode somehow set incorrectly in private function")
+		return ccg.OrdersDetails{}, errors.New("mode somehow set incorrectly in private function")
 	}
 	ohr := OrderHistoryRequest{
-		Currency:   c.Currency,
-		Instrument: c.Instrument,
-		Limit:      limit,
-		Since:      since,
+		SecondaryCurrency: SecondaryCurrency,
+		PrimaryCurrency:   PrimaryCurrency,
+		Limit:             limit,
+		Since:             since,
 	}
 	got, err := c.signAndPost(URI, ohr)
 	var ohs OrderHistoryResponse
@@ -211,12 +211,12 @@ func (c BTCMarketsClient) GetOpenOrders() (ccg.OrdersDetails, error) {
 }
 
 //TradeHistory gets the current trade history
-func (c BTCMarketsClient) TradeHistory(limit int) (OrderHistoryResponse, error) {
+func (c BTCMarketsClient) TradeHistory(limit int) (ccg.Trades, error) {
 	return c.TradeHistorySince(limit, 0)
 }
 
 //TradeHistorySince gets the current trade history since the time specified (Unix ms)
-func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (OrderHistoryResponse, error) {
+func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (ccg.Trades, error) {
 	return c.orderHistory(limit, since, 2)
 }
 
@@ -276,17 +276,17 @@ func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, er
 }
 
 //PlaceMarketOrder places a market order
-func (c BTCMarketsClient) PlaceMarketOrder(CurrencyFrom, CurrencyTo string, amount int64) (ccg.OrderDetails, error) {
+func (c BTCMarketsClient) PlaceMarketOrder(PrimaryCurrency, SecondaryCurrency string, amount int64) (ccg.OrderDetails, error) {
 
 }
 
 //PlaceLimitOrder places a limit order for the specified price, that is, the price and amount will be the trades.
-func (c BTCMarketsClient) PlaceLimitOrder(CurrencyFrom, CurrencyTo string, amount, price int64) (ccg.OrderDetails, error) {
+func (c BTCMarketsClient) PlaceLimitOrder(PrimaryCurrency, SecondaryCurrency string, amount, price int64) (ccg.OrderDetails, error) {
 
 }
 
 //GetOrderBook gets the orders for the relevant currencies
-func (c BTCMarketsClient) GetOrderBook(CurrencyFrom, CurrencyTo string) (ccg.OrderBook, error) {
+func (c BTCMarketsClient) GetOrderBook(PrimaryCurrency, SecondaryCurrency string) (ccg.OrderBook, error) {
 
 }
 

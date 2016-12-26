@@ -37,7 +37,16 @@ func (c BTCMarketsClient) GetBalances() (ccg.AccountBalances, error) {
 	if err != nil {
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
-	return br, err
+	ab := ccg.AccountBalances{}
+
+	for _, b := range br {
+		ab = append(ab, ccg.AccountBalance{
+			Currency:         b.Currency,
+			AvailableBalance: b.Balance,
+			TotalBalance:     b.Balance + b.PendingFunds,
+		})
+	}
+	return ab, err
 }
 
 //GetBalance gets the balance of a single currency

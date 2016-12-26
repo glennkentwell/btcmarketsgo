@@ -46,6 +46,10 @@ func (c BTCMarketsClient) Withdraw(amount int64, to string, currency string) (Wi
 }
 
 //WithdrawCurrency withdraws the specified currency to the specified address
-func (c BTCMarketsClient) WithdrawCurrency(Currency, to string, amount int64) error {
-
+func (c BTCMarketsClient) WithdrawCurrency(Currency, To string, Amount int64) error {
+	got, err := c.Withdraw(Amount, To, Currency)
+	if got.Success {
+		return nil
+	}
+	return errors.New("Withdraw fail; " + got.ErrorMessage)
 }
