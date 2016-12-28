@@ -97,7 +97,7 @@ func lookup(sl []string, cur string) int {
 
 func lookupIndex(cur string) int {
 	for i, s := range DefaultCurrencies {
-		if s.Currency == cur {
+		if s == cur {
 			return i
 		}
 	}

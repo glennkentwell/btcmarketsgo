@@ -16,7 +16,7 @@ func (c BTCMarketsClient) Ticker(fn func(TickResponse, error), d time.Duration, 
 					return
 				}
 			default:
-				fn(c.Tick())
+				fn(c.DefaultTick())
 				time.Sleep(d)
 			}
 		}

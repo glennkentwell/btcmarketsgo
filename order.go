@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
 )
@@ -17,13 +18,13 @@ const multiplier = int64(100000000)
 
 //OrderRequest is an order request struct for parsing into json
 type OrderRequest struct {
-	Currency        string `json:"currency"`
-	Instrument      string `json:"instrument"`
-	Price           int64  `json:"price"`
-	Volume          int64  `json:"volume"`
-	OrderSide       string `json:"orderSide"`       //Camel case
-	OrderType       string `json:"ordertype"`       //the lowercase T is important...
-	ClientRequestID string `json:"clientRequestId"` //Camel case
+	CurrencySecondary string `json:"currency"`
+	CurrencyPrimary   string `json:"instrument"`
+	Price             int64  `json:"price"`
+	Volume            int64  `json:"volume"`
+	OrderSide         string `json:"orderSide"`       //Camel case
+	OrderType         string `json:"ordertype"`       //the lowercase T is important...
+	ClientRequestID   string `json:"clientRequestId"` //Camel case
 }
 
 //OrderResponse is the response from submitting an order
@@ -33,6 +34,10 @@ type OrderResponse struct {
 	ErrorMessage    string
 	ID              int
 	ClientRequestID string
+}
+
+func (or OrderResponse) convert() ccg.PlacedOrder {
+	return ccg.PlacedOrder{OrderID: or.ID}
 }
 
 //CancelOrdersRequest is the struct used to request the cancelation of an order(s)
@@ -57,9 +62,9 @@ type CancelOrderResponse struct {
 }
 
 //CreateOrder creates an order at specified price and volume
-func (c BTCMarketsClient) createOrder(CurrencyFrom, CurrencyTo string, Price, Volume int64, Buy bool, Market bool) (OrderResponse, error) {
+func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string, Price, Volume int64, Buy bool, Market bool) (ccg.PlacedOrder, error) {
 	if Volume < btcMin {
-		return OrderResponse{}, errors.New(
+		return ccg.PlacedOrder{}, errors.New(
 			fmt.Sprint("Volume must be ", btcMin, " minimum (", strconv.FormatFloat(
 				float64(btcMin)/float64(multiplier), 'f', 3, 64)+"BTC)",
 			),
@@ -67,11 +72,11 @@ func (c BTCMarketsClient) createOrder(CurrencyFrom, CurrencyTo string, Price, Vo
 	}
 	URI := "/order/create"
 	or := OrderRequest{
-		CurrencyFrom:    CurrencyFrom,
-		CurrencyTo:      CurrencyTo,
-		Price:           Price,
-		Volume:          Volume,
-		ClientRequestID: "1",
+		CurrencyPrimary:   CurrencyPrimary,
+		CurrencySecondary: CurrencySecondary,
+		Price:             Price,
+		Volume:            Volume,
+		ClientRequestID:   "1",
 	}
 	if Buy {
 		or.OrderSide = "Bid"
@@ -89,7 +94,10 @@ func (c BTCMarketsClient) createOrder(CurrencyFrom, CurrencyTo string, Price, Vo
 	if err != nil {
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
-	return orderR, err
+	if !orderR.Success {
+		return ccg.PlacedOrder{}, errors.New("Order failed; " + orderR.ErrorMessage)
+	}
+	return orderR.convert(), err
 }
 
 //CancelOrders requests the cancelation of an order(s)
@@ -133,6 +141,14 @@ type OrderHistoryResponse struct {
 	Orders       []OrderHistorySingleResponse
 }
 
+func (ohr OrderHistoryResponse) convert() ccg.OrdersDetails {
+	result := make([]ccg.OrderDetails, len(ohr.Orders))
+	for i, o := range ohr.Orders {
+		result[i] = o.convert()
+	}
+	return ccg.OrdersDetails(result)
+}
+
 //OrderHistorySingleResponse is a single order returned from a history request
 type OrderHistorySingleResponse struct {
 	ID              int64
@@ -148,6 +164,20 @@ type OrderHistorySingleResponse struct {
 	OpenVolume      int64
 	ClientRequestID string
 	Trades          []OrderHistoryTradeResponse
+}
+
+func (ohsr OrderHistorySingleResponse) convert() ccg.OrderDetails {
+	return ccg.OrderDetails{
+		Created:           time.Unix(ohsr.CreationTime/1000, 0),
+		OrderID:           ohsr.ID,
+		OrderSide:         ohsr.OrderSide,
+		OrderType:         ohsr.OrderType,
+		PrimaryCurrency:   ohsr.Instrument,
+		SecondaryCurrency: ohsr.Currency,
+		VolumeOrdered:     ohsr.Volume,
+		VolumeFilled:      ohsr.Volume - ohsr.OpenVolume,
+		Price:             ohsr.Price,
+	}
 }
 
 //OrderHistoryTradeResponse is a single trade from an order in a history request
@@ -183,9 +213,6 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 	case 1:
 		URI = "/order/history"
 		break
-	case 2:
-		URI = "/order/trade/history"
-		break
 	default:
 		return ccg.OrdersDetails{}, errors.New("mode somehow set incorrectly in private function")
 	}
@@ -199,25 +226,17 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 	var ohs OrderHistoryResponse
 	err = json.Unmarshal(got, &ohs)
 	if err != nil {
-		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
+		return ccg.OrdersDetails{}, errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
-	return ohs, err
+	if !ohs.Success {
+		return ccg.OrdersDetails{}, errors.New("Error getting orders; " + ohs.ErrorMessage)
+	}
+	return ohs.convert(), err
 }
 
 //GetOpenOrders gets the current open orders
-func (c BTCMarketsClient) GetOpenOrders() (ccg.OrdersDetails, error) {
-	got, err := c.orderHistory(9999, 0, 1)
-	return ccg.OrderDetails{}, nil
-}
-
-//TradeHistory gets the current trade history
-func (c BTCMarketsClient) TradeHistory(limit int) (ccg.Trades, error) {
-	return c.TradeHistorySince(limit, 0)
-}
-
-//TradeHistorySince gets the current trade history since the time specified (Unix ms)
-func (c BTCMarketsClient) TradeHistorySince(limit int, since int64) (ccg.Trades, error) {
-	return c.orderHistory(limit, since, 2)
+func (c BTCMarketsClient) GetOpenOrders(PrimaryCurrency, SecondaryCurrency string) (ccg.OrdersDetails, error) {
+	return c.orderHistory(PrimaryCurrency, SecondaryCurrency, 9999, 0, 1)
 }
 
 //OrderDetailsRequest is the struct used to request the details for order(s)
@@ -268,50 +287,30 @@ func (c BTCMarketsClient) OrderDetails(orderID int) (ccg.OrderDetails, error) {
 	return ccg.OrderDetails{}, err
 }
 
-//CreateBuyOrder creates a buy order for the specified price and volume.
+//PlaceMarketBuyOrder places a market order
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateBuyOrder(Price, Volume int64) (OrderResponse, error) {
-	return c.createOrder(Price, Volume, true, false)
+func (c BTCMarketsClient) PlaceMarketBuyOrder(PrimaryCurrency, SecondaryCurrency string, amount int64) (ccg.PlacedOrder, error) {
+	return c.createOrder(PrimaryCurrency, SecondaryCurrency, 0, amount, true, true)
 }
 
-//PlaceMarketOrder places a market order
-func (c BTCMarketsClient) PlaceMarketOrder(PrimaryCurrency, SecondaryCurrency string, amount int64) (ccg.OrderDetails, error) {
-
-}
-
-//PlaceLimitOrder places a limit order for the specified price, that is, the price and amount will be the trades.
-func (c BTCMarketsClient) PlaceLimitOrder(PrimaryCurrency, SecondaryCurrency string, amount, price int64) (ccg.OrderDetails, error) {
-
-}
-
-//GetOrderBook gets the orders for the relevant currencies
-func (c BTCMarketsClient) GetOrderBook(PrimaryCurrency, SecondaryCurrency string) (ccg.OrderBook, error) {
-
-}
-
-//GetRecentTrades gets most recent trades limited by historyAmount
-func (c BTCMarketsClient) GetRecentTrades(CurrencyFrom, CurrencyTo string, historyAmount int) (ccg.RecentTrades, error) {
-
-}
-
-//CreateMarketBuyOrder creates a buy order for the specified price and volume.
+//PlaceLimitBuyOrder places a limit order for the specified price, that is, the price and amount will be the trades.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateMarketBuyOrder(Volume int64) (OrderResponse, error) {
-	return c.createOrder(0, Volume, true, true)
+func (c BTCMarketsClient) PlaceLimitBuyOrder(PrimaryCurrency, SecondaryCurrency string, amount, price int64) (ccg.PlacedOrder, error) {
+	return c.createOrder(PrimaryCurrency, SecondaryCurrency, price, amount, true, false)
 }
 
-//CreateSellOrder creates a sell order for the specified price and volume.
+//PlaceMarketSellOrder places a market order
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateSellOrder(Price, Volume int64) (OrderResponse, error) {
-	return c.createOrder(Price, Volume, false, false)
+func (c BTCMarketsClient) PlaceMarketSellOrder(PrimaryCurrency, SecondaryCurrency string, amount int64) (ccg.PlacedOrder, error) {
+	return c.createOrder(PrimaryCurrency, SecondaryCurrency, 0, amount, false, true)
 }
 
-//CreateMarketSellOrder creates a sell order for the specified price and volume.
+//PlaceLimitSellOrder places a limit order for the specified price, that is, the price and amount will be the trades.
 // Price and volume are both *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) CreateMarketSellOrder(Volume int64) (OrderResponse, error) {
-	return c.createOrder(0, Volume, false, true)
+func (c BTCMarketsClient) PlaceLimitSellOrder(PrimaryCurrency, SecondaryCurrency string, amount, price int64) (ccg.PlacedOrder, error) {
+	return c.createOrder(PrimaryCurrency, SecondaryCurrency, price, amount, false, false)
 }

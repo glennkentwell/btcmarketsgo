@@ -2,10 +2,10 @@ package btcmarketsgo
 
 import (
 	"encoding/json"
-	"strconv"
 	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
+	log "github.com/Sirupsen/logrus"
 )
 
 //TickResponse is the response recieved when requesting market tick
@@ -48,14 +48,30 @@ type OrderBookResponse struct {
 	Bids       [][]float64
 }
 
-//OrderBook gets the current orderbook
-func (c BTCMarketsClient) OrderBook(CurrencyFrom, CurrencyTo string) (obr OrderBookResponse, err error) {
-	all, err := getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/orderbook")
-	if err != nil {
-		return
+func (obr OrderBookResponse) convert() ccg.OrderBook {
+	result := ccg.OrderBook{
+		PrimaryCurrency:   obr.Instrument,
+		SecondaryCurrency: obr.Currency,
+		BuyOrders:         ccg.Orders(make([]ccg.Order, len(obr.Bids))),
+		SellOrders:        ccg.Orders(make([]ccg.Order, len(obr.Asks))),
 	}
-	err = json.Unmarshal(all, &obr)
-	return
+	for i, b := range obr.Bids {
+		if len(b) != 2 {
+			log.Error("Bid not correct size")
+			continue
+		}
+		result.BuyOrders[i].Price = ccg.ConvertFromFloat(b[0])
+		result.BuyOrders[i].Volume = ccg.ConvertFromFloat(b[1])
+	}
+	for i, a := range obr.Asks {
+		if len(a) != 2 {
+			log.Error("Ask not correct size")
+			continue
+		}
+		result.SellOrders[i].Price = ccg.ConvertFromFloat(a[0])
+		result.SellOrders[i].Volume = ccg.ConvertFromFloat(a[1])
+	}
+	return result
 }
 
 //TradeResponse is a single response of a trade
@@ -69,22 +85,51 @@ type TradeResponse struct {
 //TradesResponse is the trades returned from a trades request
 type TradesResponse []TradeResponse
 
+func (tr TradesResponse) convert() ccg.RecentTrades {
+	result := ccg.RecentTrades{}
+	result.Timestamp = time.Now()
+	result.Trades = ccg.Trades(make([]ccg.Trade, len(tr)))
+	for i, t := range tr {
+		result.Trades[i].Amount = ccg.ConvertFromFloat(t.Amount)
+		result.Trades[i].Price = ccg.ConvertFromFloat(t.Price)
+	}
+	return result
+}
+
 //Trades gets the current trades
 func (c BTCMarketsClient) Trades(CurrencyFrom, CurrencyTo string) (TradesResponse, error) {
 	return c.TradesSince(CurrencyFrom, CurrencyTo, time.Time{})
 }
 
-//TradesSince gets the current trades since the specified time
-func (c BTCMarketsClient) TradesSince(CurrencyFrom, CurrencyTo string, since time.Time) (tr TradesResponse, err error) {
-	var all []byte
-	if since.Equal(time.Time{}) {
-		all, err = getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/trades")
-	} else {
-		all, err = getBody(c.Domain + "/market/" + CurrencyTo + "/" + CurrencyFrom + "/trades?since=" + strconv.FormatInt(since.Unix(), 10))
-	}
+//GetOrderBook gets the orders for the relevant currencies
+func (c BTCMarketsClient) GetOrderBook(PrimaryCurrency, SecondaryCurrency string) (ccg.OrderBook, error) {
+	all, err := getBody(c.Domain + "/market/" + PrimaryCurrency + "/" + SecondaryCurrency + "/orderbook")
 	if err != nil {
-		return
+		return ccg.OrderBook{}, err
 	}
+	var obr OrderBookResponse
+	err = json.Unmarshal(all, &obr)
+	if err != nil {
+		return ccg.OrderBook{}, err
+	}
+	return obr.convert(), nil
+}
+
+//GetRecentTrades gets most recent trades limited by historyAmount
+func (c BTCMarketsClient) GetRecentTrades(PrimaryCurrency, SecondaryCurrency string, historyAmount int) (ccg.RecentTrades, error) {
+	var all []byte
+	var err error
+	all, err = getBody(c.Domain + "/market/" + PrimaryCurrency + "/" + SecondaryCurrency + "/trades")
+	if err != nil {
+		return ccg.RecentTrades{}, err
+	}
+	var tr TradesResponse
 	err = json.Unmarshal(all, &tr)
-	return
+	if err != nil {
+		return ccg.RecentTrades{}, err
+	}
+	result := tr.convert()
+	result.PrimaryCurrency = PrimaryCurrency
+	result.SecondaryCurrency = SecondaryCurrency
+	return result, nil
 }
