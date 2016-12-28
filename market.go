@@ -85,20 +85,24 @@ type TradeResponse struct {
 //TradesResponse is the trades returned from a trades request
 type TradesResponse []TradeResponse
 
-func (tr TradesResponse) convert() ccg.RecentTrades {
+func (tr TradesResponse) convert(max int) ccg.RecentTrades {
 	result := ccg.RecentTrades{}
 	result.Timestamp = time.Now()
-	result.Trades = ccg.Trades(make([]ccg.Trade, len(tr)))
+	result.Trades = ccg.Trades(make([]ccg.Trade, min(len(tr), max)))
 	for i, t := range tr {
+		if i >= max {
+			break
+		}
 		result.Trades[i].Amount = ccg.ConvertFromFloat(t.Amount)
 		result.Trades[i].Price = ccg.ConvertFromFloat(t.Price)
 	}
 	return result
 }
-
-//Trades gets the current trades
-func (c BTCMarketsClient) Trades(CurrencyFrom, CurrencyTo string) (TradesResponse, error) {
-	return c.TradesSince(CurrencyFrom, CurrencyTo, time.Time{})
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 //GetOrderBook gets the orders for the relevant currencies
@@ -128,7 +132,7 @@ func (c BTCMarketsClient) GetRecentTrades(PrimaryCurrency, SecondaryCurrency str
 	if err != nil {
 		return ccg.RecentTrades{}, err
 	}
-	result := tr.convert()
+	result := tr.convert(historyAmount)
 	result.PrimaryCurrency = PrimaryCurrency
 	result.SecondaryCurrency = SecondaryCurrency
 	return result, nil

@@ -22,8 +22,8 @@ type WithdrawResponse struct {
 	Status       string
 }
 
-//GetDigitalCurrencyDepositAddress gets the deposit address for a digital currency
-func (c BTCMarketsClient) GetDigitalCurrencyDepositAddress(Currency string) (ccg.CurrencyAddress, error) {
+//GetPrimaryCurrencyDepositAddress gets the deposit address for a digital currency
+func (c BTCMarketsClient) GetPrimaryCurrencyDepositAddress(Currency string) (ccg.CurrencyAddress, error) {
 	if i := lookupIndex(Currency); i >= 0 {
 		return ccg.CurrencyAddress{DepositAddress: c.Addresses[i].Address}, nil
 	}
@@ -33,7 +33,7 @@ func (c BTCMarketsClient) GetDigitalCurrencyDepositAddress(Currency string) (ccg
 //Withdraw withdraws the specified currency (and amount) to the specified BTC address.
 // amount is *10^-8, as specified in the BTCMarkets API;
 // ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
-func (c BTCMarketsClient) Withdraw(amount int64, to string, currency string) (WithdrawResponse, error) {
+func (c BTCMarketsClient) withdraw(amount int64, to string, currency string) (WithdrawResponse, error) {
 	URI := "/fundtransfer/withdrawCrypto"
 	wr := WithdrawRequest{amount, to, currency}
 	got, err := c.signAndPost(URI, wr)
@@ -46,8 +46,13 @@ func (c BTCMarketsClient) Withdraw(amount int64, to string, currency string) (Wi
 }
 
 //WithdrawCurrency withdraws the specified currency to the specified address
+// amount is *10^-8, as specified in the BTCMarkets API;
+// ie: $12.34 = 1,234,000,000; 12.34BTC=1,234,000,000
 func (c BTCMarketsClient) WithdrawCurrency(Currency, To string, Amount int64) error {
-	got, err := c.Withdraw(Amount, To, Currency)
+	got, err := c.withdraw(Amount, To, Currency)
+	if err != nil {
+		return err
+	}
 	if got.Success {
 		return nil
 	}

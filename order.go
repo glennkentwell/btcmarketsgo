@@ -62,7 +62,8 @@ type CancelOrderResponse struct {
 }
 
 //CreateOrder creates an order at specified price and volume
-func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string, Price, Volume int64, Buy bool, Market bool) (ccg.PlacedOrder, error) {
+func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
+	Price, Volume int64, Buy bool, Market bool) (ccg.PlacedOrder, error) {
 	if Volume < btcMin {
 		return ccg.PlacedOrder{}, errors.New(
 			fmt.Sprint("Volume must be ", btcMin, " minimum (", strconv.FormatFloat(
@@ -268,6 +269,20 @@ type OrderDetailsResponse struct {
 	Trades       []OrderHistoryTradeResponse
 }
 
+func (odr OrderDetailsResponse) convert() ccg.OrderDetails {
+	return ccg.OrderDetails{
+		Created:           time.Unix(odr.CreationTime/1000, 0),
+		OrderID:           int64(odr.ID),
+		OrderSide:         odr.OrderSide,
+		OrderType:         odr.OrderType,
+		PrimaryCurrency:   odr.Instrument,
+		SecondaryCurrency: odr.Currency,
+		VolumeOrdered:     odr.Volume,
+		VolumeFilled:      odr.Volume - odr.OpenVolume,
+		Price:             odr.Price,
+	}
+}
+
 //OrdersDetails gets the details of the specified orders
 func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse, error) {
 	URI := "/order/detail"
@@ -284,7 +299,16 @@ func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse,
 //OrderDetails gets a single orders details
 func (c BTCMarketsClient) OrderDetails(orderID int) (ccg.OrderDetails, error) {
 	got, err := c.OrdersDetails(orderID)
-	return ccg.OrderDetails{}, err
+	if err != nil {
+		return ccg.OrderDetails{}, err
+	}
+	if !got.Success {
+		return ccg.OrderDetails{}, errors.New("Error getting order details; " + got.ErrorMessage)
+	}
+	if len(got.Orders) < 1 {
+		return ccg.OrderDetails{}, errors.New("Not enough orders returned")
+	}
+	return got.Orders[0].convert(), nil
 }
 
 //PlaceMarketBuyOrder places a market order

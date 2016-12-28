@@ -9,8 +9,14 @@ import (
 //DefaultDomain is the default api domain
 const DefaultDomain = "https://api.btcmarkets.net"
 
-//DefaultCurrencies are the default currencies available
-var DefaultCurrencies = []string{"BTC", "LTC", "ETH", "ETC", "AUD"}
+//DefaultPrimaryCurrencies gets the default primary currencies
+var DefaultPrimaryCurrencies = []string{"BTC", "LTC", "ETH", "ETC"}
+
+//DefaultSecondaryCurrencies gets the secondary primary currencies
+var DefaultSecondaryCurrencies = []string{"AUD"}
+
+//DefaultCurrencies is the total list of currencies
+var DefaultCurrencies = append(DefaultSecondaryCurrencies, DefaultPrimaryCurrencies...)
 
 //WithdrawFees are the fees to withdraw from the account
 var WithdrawFees = []int64{0, 0, 1000000, 1000000, 0}
@@ -36,11 +42,12 @@ var defaultAddresses = []CurrencyAddress{
 
 //BTCMarketsClient is primary struct for interacting with the API
 type BTCMarketsClient struct {
-	Public        string
-	decodedSecret []byte
-	Domain        string
-	Currencies    []string
-	Addresses     []CurrencyAddress
+	Public              string
+	decodedSecret       []byte
+	Domain              string
+	PrimaryCurrencies   []string
+	SecondaryCurrencies []string
+	Addresses           []CurrencyAddress
 }
 
 //CurrencyAddress is an entry of addresses for depositing currency
@@ -50,22 +57,23 @@ type CurrencyAddress struct {
 }
 
 //NewClient gets a new BTCMarketsClient
-func NewClient(public, secret, domain string, currencies []string, addresses []CurrencyAddress) (*BTCMarketsClient, error) {
+func NewClient(public, secret, domain string, primaryCurrencies, secondaryCurrencies []string, addresses []CurrencyAddress) (*BTCMarketsClient, error) {
 	data, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		log.Error("error:", err)
 		return nil, err
 	}
 	return &BTCMarketsClient{
-		Public:        public,
-		decodedSecret: data,
-		Domain:        domain,
-		Currencies:    currencies,
-		Addresses:     addresses,
+		Public:              public,
+		decodedSecret:       data,
+		Domain:              domain,
+		PrimaryCurrencies:   primaryCurrencies,
+		SecondaryCurrencies: secondaryCurrencies,
+		Addresses:           addresses,
 	}, nil
 }
 
 //NewDefaultClient gets a new client with default settings. NOTE: ADDRESSES ARE ALSO SET
 func NewDefaultClient(public, secret string) (*BTCMarketsClient, error) {
-	return NewClient(public, secret, DefaultDomain, DefaultCurrencies, defaultAddresses)
+	return NewClient(public, secret, DefaultDomain, DefaultPrimaryCurrencies, DefaultSecondaryCurrencies, defaultAddresses)
 }
