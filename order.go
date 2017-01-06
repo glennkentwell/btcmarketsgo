@@ -237,8 +237,9 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 }
 
 //GetOpenOrders gets the current open orders
-func (c BTCMarketsClient) GetOpenOrders(PrimaryCurrency, SecondaryCurrency string) (ccg.OrdersDetails, error) {
-	return c.orderHistory(PrimaryCurrency, SecondaryCurrency, 9999, 0, 1)
+func (c BTCMarketsClient) GetOpenOrders() (ccg.OrdersDetails, error) {
+	//TODO:FIX ME
+	return c.orderHistory("BTC", "AUD", 9999, 0, 1)
 }
 
 //OrderDetailsRequest is the struct used to request the details for order(s)
@@ -297,8 +298,8 @@ func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse,
 	return OrdersDetailsResponse{}, err
 }
 
-//OrderDetails gets a single orders details
-func (c BTCMarketsClient) OrderDetails(orderID int) (ccg.OrderDetails, error) {
+//GetOrderDetails gets a single orders details
+func (c BTCMarketsClient) GetOrderDetails(orderID int) (ccg.OrderDetails, error) {
 	got, err := c.OrdersDetails(orderID)
 	if err != nil {
 		return ccg.OrderDetails{}, err
