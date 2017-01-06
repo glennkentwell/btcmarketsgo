@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+
+	"github.com/grafana/grafana/pkg/log"
 )
 
 const btcMin = int64(100000)
@@ -81,6 +83,7 @@ func (c BTCMarketsClient) createOrder(Price, Volume int64, Buy bool, Market bool
 	} else {
 		or.OrderType = "Limit"
 	}
+	log.Info(fmt.Sprintf("%+v", or))
 	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
 	err = json.Unmarshal(got, &orderR)
