@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/grafana/grafana/pkg/log"
+	log "github.com/Sirupsen/logrus"
 )
 
 const btcMin = int64(100000)
