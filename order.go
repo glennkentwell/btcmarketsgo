@@ -8,6 +8,7 @@ import (
 	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
+
 )
 
 const btcMin = int64(100000)
@@ -89,6 +90,7 @@ func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
 	} else {
 		or.OrderType = "Limit"
 	}
+	log.Info(fmt.Sprintf("%+v", or))
 	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
 	err = json.Unmarshal(got, &orderR)
