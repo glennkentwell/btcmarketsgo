@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/RyanCarrier/btcmarketsgo"
 	log "github.com/Sirupsen/logrus"
+	"github.com/davecgh/go-spew/spew"
 )
 
 var client *btcmarketsgo.BTCMarketsClient
@@ -20,7 +20,11 @@ func init() {
 		log.Fatal(err)
 	}
 }
+func main() {
+	print(client.GetOpenOrders())
+}
 
+/*
 func main() {
 	got, err := client.CreateBuyOrder(99900000000, 99900000000)
 	print(got, err)
@@ -40,11 +44,13 @@ func main() {
 	time.Sleep(time.Second * 5 * 10)
 	quit <- true
 	log.Info("quit")
-}
+}*/
 
 func print(got interface{}, err error) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%+v\n", got)
+	config := spew.NewDefaultConfig()
+	config.Indent = "\t"
+	config.Dump(got)
 }
