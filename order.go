@@ -8,6 +8,7 @@ import (
 	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
+	"github.com/davecgh/go-spew/spew"
 )
 
 const btcMin = int64(100000)
@@ -225,6 +226,10 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 		Since:             since,
 	}
 	got, err := c.signAndPost(URI, ohr)
+	if err != nil {
+		return ccg.OrdersDetails{}, errors.New("Error in response from server; (order history	)" + err.Error())
+	}
+	spew.Dump(string(got))
 	var ohs OrderHistoryResponse
 	err = json.Unmarshal(got, &ohs)
 	if err != nil {
@@ -233,13 +238,14 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 	if !ohs.Success {
 		return ccg.OrdersDetails{}, errors.New("Error getting orders; " + ohs.ErrorMessage)
 	}
+	spew.Dump(ohs)
 	return ohs.convert(), err
 }
 
 //GetOpenOrders gets the current open orders
 func (c BTCMarketsClient) GetOpenOrders() (ccg.OrdersDetails, error) {
 	//TODO:FIX ME
-	return c.orderHistory("BTC", "AUD", 200, 0, 1)
+	return c.orderHistory("BTC", "AUD", 200, 0, 0)
 }
 
 //OrderDetailsRequest is the struct used to request the details for order(s)

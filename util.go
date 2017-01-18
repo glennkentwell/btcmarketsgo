@@ -13,6 +13,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func getBody(request string) ([]byte, error) {
@@ -62,6 +63,7 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 	} else {
 		body = []byte("")
 	}
+	spew.Dump(i)
 	client := http.Client{}
 	now, signature := c.sign(URI, string(body))
 	URL := c.Domain + URI
