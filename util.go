@@ -63,6 +63,7 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 	} else {
 		body = []byte("")
 	}
+	log.Info("JSON posting (to" + URI + "):")
 	spew.Dump(i)
 	client := http.Client{}
 	now, signature := c.sign(URI, string(body))

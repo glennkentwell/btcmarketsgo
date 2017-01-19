@@ -21,7 +21,9 @@ func init() {
 	}
 }
 func main() {
-	print(client.GetOpenOrders())
+	got, err := client.GetOpenOrders()
+	log.Info("Open orders output:")
+	print(got, err)
 }
 
 /*
