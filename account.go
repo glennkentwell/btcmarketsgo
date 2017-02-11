@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
-	log "github.com/Sirupsen/logrus"
 )
 
 //BalanceResponse is a single balance response
@@ -34,7 +33,6 @@ func (c BTCMarketsClient) GetBalances() (ccg.AccountBalances, error) {
 	URI := "/account/balance"
 	got, err := c.signAndGet(URI)
 	if err != nil {
-		log.Error("Error getting balance", err)
 		return ccg.AccountBalances{}, err
 	}
 	var br BalancesResponse

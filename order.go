@@ -8,7 +8,6 @@ import (
 	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
-	log "github.com/Sirupsen/logrus"
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -91,7 +90,6 @@ func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
 	} else {
 		or.OrderType = "Limit"
 	}
-	//log.Info(fmt.Sprintf("%+v", or))
 	got, err := c.signAndPost(URI, or)
 	var orderR OrderResponse
 	err = json.Unmarshal(got, &orderR)
@@ -230,7 +228,6 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 	if err != nil {
 		return ccg.OrdersDetails{}, errors.New("Error in response from server; (order history	)" + err.Error())
 	}
-	log.Info("Raw text response:")
 	spew.Dump(string(got))
 	var ohs OrderHistoryResponse
 	err = json.Unmarshal(got, &ohs)
@@ -240,8 +237,6 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 	if !ohs.Success {
 		return ccg.OrdersDetails{}, errors.New("Error getting orders; " + ohs.ErrorMessage)
 	}
-	log.Info("Order Response:")
-	spew.Dump(ohs)
 	return ohs.convert(), err
 }
 

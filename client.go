@@ -1,10 +1,6 @@
 package btcmarketsgo
 
-import (
-	"encoding/base64"
-
-	log "github.com/Sirupsen/logrus"
-)
+import "encoding/base64"
 
 //DefaultDomain is the default api domain
 const DefaultDomain = "https://api.btcmarkets.net"
@@ -60,7 +56,6 @@ type CurrencyAddress struct {
 func NewClient(public, secret, domain string, primaryCurrencies, secondaryCurrencies []string, addresses []CurrencyAddress) (*BTCMarketsClient, error) {
 	data, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
-		log.Error("error:", err)
 		return nil, err
 	}
 	return &BTCMarketsClient{

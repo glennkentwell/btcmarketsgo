@@ -2,10 +2,10 @@ package btcmarketsgo
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	ccg "github.com/RyanCarrier/cryptoclientgo"
-	log "github.com/Sirupsen/logrus"
 )
 
 //TickResponse is the response recieved when requesting market tick
@@ -48,7 +48,7 @@ type OrderBookResponse struct {
 	Bids       [][]float64
 }
 
-func (obr OrderBookResponse) convert() ccg.OrderBook {
+func (obr OrderBookResponse) convert() (ccg.OrderBook, error) {
 	result := ccg.OrderBook{
 		PrimaryCurrency:   obr.Instrument,
 		SecondaryCurrency: obr.Currency,
@@ -57,21 +57,19 @@ func (obr OrderBookResponse) convert() ccg.OrderBook {
 	}
 	for i, b := range obr.Bids {
 		if len(b) != 2 {
-			log.Error("Bid not correct size")
-			continue
+			return ccg.OrderBook{}, errors.New("Bid not correct size")
 		}
 		result.BuyOrders[i].Price = ccg.ConvertFromFloat(b[0])
 		result.BuyOrders[i].Volume = ccg.ConvertFromFloat(b[1])
 	}
 	for i, a := range obr.Asks {
 		if len(a) != 2 {
-			log.Error("Ask not correct size")
-			continue
+			return ccg.OrderBook{}, errors.New("Ask not correct size")
 		}
 		result.SellOrders[i].Price = ccg.ConvertFromFloat(a[0])
 		result.SellOrders[i].Volume = ccg.ConvertFromFloat(a[1])
 	}
-	return result
+	return result, nil
 }
 
 //TradeResponse is a single response of a trade
@@ -116,7 +114,7 @@ func (c BTCMarketsClient) GetOrderBook(PrimaryCurrency, SecondaryCurrency string
 	if err != nil {
 		return ccg.OrderBook{}, err
 	}
-	return obr.convert(), nil
+	return obr.convert()
 }
 
 //GetRecentTrades gets most recent trades limited by historyAmount

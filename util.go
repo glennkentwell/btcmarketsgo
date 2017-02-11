@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -63,7 +62,6 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 	} else {
 		body = []byte("")
 	}
-	log.Info("JSON posting (to" + URI + "):")
 	spew.Dump(i)
 	client := http.Client{}
 	now, signature := c.sign(URI, string(body))
@@ -83,7 +81,6 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 		return nil, errors.New("Error reading response;" + err.Error())
 	}
 	if response.StatusCode/100 != 2 {
-		log.Error("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode) + "\n" + string(body))
 		return nil, errors.New("StatusCode not 2xx; " + strconv.Itoa(response.StatusCode))
 	}
 	return body, err
