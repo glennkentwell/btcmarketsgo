@@ -69,6 +69,9 @@ func NewClient(public, secret, domain string, primaryCurrencies, secondaryCurren
 }
 
 //NewDefaultClient gets a new client with default settings. NOTE: ADDRESSES ARE ALSO SET
-func NewDefaultClient(public, secret string) (*BTCMarketsClient, error) {
+func NewDefaultClient(public, secret string, err error) (*BTCMarketsClient, error) {
+	if err != nil {
+		return nil, err
+	}
 	return NewClient(public, secret, DefaultDomain, DefaultPrimaryCurrencies, DefaultSecondaryCurrencies, defaultAddresses)
 }
