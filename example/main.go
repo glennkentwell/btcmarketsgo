@@ -11,17 +11,16 @@ import (
 var client *btcmarketsgo.BTCMarketsClient
 
 func init() {
-	public, private := btcmarketsgo.GetKeys("api.secret")
 	var err error
 	//Could pass keys directly through, but abstracted for clarity
-	client, err = btcmarketsgo.NewDefaultClient(public, private)
+	client, err = btcmarketsgo.NewDefaultClient(btcmarketsgo.GetKeys("api.secret"))
 	//overwrite private here TODO (this won't need to be done if keys passed directly)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 func main() {
-	got, err := client.GetOpenOrders()
+	got, err := client.GetOrderBook("BTC", "AUD")
 	log.Info("Open orders output:")
 	print(got, err)
 }
