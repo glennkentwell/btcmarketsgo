@@ -11,7 +11,7 @@ import (
 type WithdrawRequest struct {
 	Amount   int64  `json:"amount"`
 	Address  string `json:"address"`
-	Currency string `jsoin:"currency"`
+	Currency string `json:"currency"`
 }
 
 //WithdrawResponse is the response recieved when requesting to withdraw
