@@ -2,40 +2,29 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/RyanCarrier/btcmarketsgo"
-	log "github.com/Sirupsen/logrus"
 	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
 )
 
 var client *btcmarketsgo.BTCMarketsClient
 
 func init() {
+
 	var err error
-	//Could pass keys directly through, but abstracted for clarity
 	client, err = btcmarketsgo.NewDefaultClient(btcmarketsgo.GetKeys("api.secret"))
-	//overwrite private here TODO (this won't need to be done if keys passed directly)
+	log.SetLevel(log.DebugLevel)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
+
 func main() {
 	got, err := client.GetOrderBook("BTC", "AUD")
 	log.Info("Open orders output:")
 	print(got, err)
-}
-
-/*
-func main() {
-	got, err := client.CreateBuyOrder(99900000000, 99900000000)
-	print(got, err)
-	print(client.OrdersDetails(got.ID))
-	print(client.Tick())
-	print(client.OrderBook())
-	print(client.Trades())
-	print(client.CancelOrder(got.ID))
-	print(client.OrdersDetails(got.ID))
-
 	//Ticker example
 	quit := make(chan bool)
 	client.Ticker(func(tr btcmarketsgo.TickResponse, err error) {
@@ -45,7 +34,7 @@ func main() {
 	time.Sleep(time.Second * 5 * 10)
 	quit <- true
 	log.Info("quit")
-}*/
+}
 
 func print(got interface{}, err error) {
 	if err != nil {

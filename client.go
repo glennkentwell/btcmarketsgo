@@ -54,6 +54,7 @@ type CurrencyAddress struct {
 
 //NewClient gets a new BTCMarketsClient
 func NewClient(public, secret, domain string, primaryCurrencies, secondaryCurrencies []string, addresses []CurrencyAddress) (*BTCMarketsClient, error) {
+
 	data, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
 		return nil, err

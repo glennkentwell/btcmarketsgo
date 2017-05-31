@@ -13,14 +13,18 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
 )
 
 func getBody(request string) ([]byte, error) {
+	log.Debug("Doing request:", "GET", ", address:", request)
 	resp, err := http.Get(request)
 	if err != nil {
 		return []byte{}, err
 	}
-	return ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Debug("Response status:", strconv.Itoa(resp.StatusCode), " Response:", string(body))
+	return body, err
 }
 
 func (c BTCMarketsClient) sign(URI, body string) (int64, string) {
@@ -71,12 +75,14 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 		return nil, errors.New("Error creating new Request;" + err.Error())
 	}
 	c.setupHeaders(req, now, signature)
+	log.Debug("Doing request:", do, ", address:", URL, ", body:", body)
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, errors.New("Error doing request;" + err.Error())
 	}
 
 	body, err = ioutil.ReadAll(response.Body)
+	log.Debug("Response status:", strconv.Itoa(response.StatusCode), " Response:", body)
 	if err != nil {
 		return nil, errors.New("Error reading response;" + err.Error())
 	}
