@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/RyanCarrier/btcmarketsgo"
 	"github.com/davecgh/go-spew/spew"
@@ -22,18 +21,19 @@ func init() {
 }
 
 func main() {
-	got, err := client.GetOrderBook("BTC", "AUD")
+	//got, err := client.GetOrderBook("BTC", "AUD")
+	got, err := client.GetOrderBook("ETH", "BTC")
 	log.Info("Open orders output:")
 	print(got, err)
 	//Ticker example
-	quit := make(chan bool)
+	/*quit := make(chan bool)
 	client.Ticker(func(tr btcmarketsgo.TickResponse, err error) {
 		fmt.Printf("%+v\n", tr)
 	}, time.Second, quit)
 	log.Info("quiting after 50 seconds")
 	time.Sleep(time.Second * 5 * 10)
 	quit <- true
-	log.Info("quit")
+	log.Info("quit")*/
 }
 
 func print(got interface{}, err error) {
