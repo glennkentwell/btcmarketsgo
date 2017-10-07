@@ -10,7 +10,6 @@ import (
 	ccg "github.com/RyanCarrier/cryptoclientgo"
 
 	"github.com/davecgh/go-spew/spew"
-	log "github.com/sirupsen/logrus"
 )
 
 const btcMin = int64(100000)
@@ -102,13 +101,9 @@ func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
 	if !orderR.Success {
-		log.Debug(URI, or)
-		log.Debug(orderR)
-		return ccg.PlacedOrder{}, errors.New("Order failed; " + orderR.ErrorMessage)
+		return ccg.PlacedOrder{}, errors.New("Order failed; " + orderR.ErrorMessage + "; Could potentially not have the funds asked, or currencies incorrect")
 	}
 	if err != nil {
-		log.Debug(URI, or)
-		log.Debug(orderR)
 		return orderR.convert(), errors.New("Order failed, but response was success;" + err.Error())
 	}
 	return orderR.convert(), err
