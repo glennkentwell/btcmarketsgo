@@ -91,6 +91,9 @@ func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
 		or.OrderType = "Limit"
 	}
 	got, err := c.signAndPost(URI, or)
+	if err != nil {
+		err = errors.New("Error signing and POST'ing;" + err.Error() + "\n" + string(got))
+	}
 	var orderR OrderResponse
 	err = json.Unmarshal(got, &orderR)
 	if err != nil {
@@ -98,6 +101,9 @@ func (c BTCMarketsClient) createOrder(CurrencyPrimary, CurrencySecondary string,
 	}
 	if !orderR.Success {
 		return ccg.PlacedOrder{}, errors.New("Order failed; " + orderR.ErrorMessage)
+	}
+	if err != nil {
+		return orderR.convert(), errors.New("Order failed, but response was success;" + err.Error())
 	}
 	return orderR.convert(), err
 }

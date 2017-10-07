@@ -22,7 +22,7 @@ func init() {
 
 func main() {
 	//got, err := client.GetOrderBook("BTC", "AUD")
-	got, err := client.GetOrderBook("ETH", "BTC")
+	got, err := btcmarketsgo.BTCMarketsClient{}.GetOrderBook("ETH", "BTC")
 	log.Info("Open orders output:")
 	print(got, err)
 	//Ticker example
