@@ -75,14 +75,14 @@ func (c BTCMarketsClient) signAnd(URI string, i interface{}, do string) ([]byte,
 		return nil, errors.New("Error creating new Request;" + err.Error())
 	}
 	c.setupHeaders(req, now, signature)
-	log.Debug("Doing request:", do, ", address:", URL, ", body:", body)
+	log.Debug("Doing request:", string(do), ", address:", string(URL), ", body:", string(body))
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, errors.New("Error doing request;" + err.Error())
 	}
 
 	body, err = ioutil.ReadAll(response.Body)
-	log.Debug("Response status:", strconv.Itoa(response.StatusCode), " Response:", body)
+	log.Debug("Response status:", strconv.Itoa(response.StatusCode), " Response:", string(body))
 	if err != nil {
 		return nil, errors.New("Error reading response;" + err.Error())
 	}

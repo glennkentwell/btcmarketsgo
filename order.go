@@ -306,7 +306,7 @@ func (c BTCMarketsClient) OrdersDetails(orderIDs ...int) (OrdersDetailsResponse,
 	if err != nil {
 		err = errors.New("Error unmarshaling response;" + err.Error() + "\n" + string(got))
 	}
-	return OrdersDetailsResponse{}, err
+	return odr, err
 }
 
 //GetOrderDetails gets a single orders details
