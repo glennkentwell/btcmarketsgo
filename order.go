@@ -248,9 +248,19 @@ func (c BTCMarketsClient) orderHistory(PrimaryCurrency, SecondaryCurrency string
 }
 
 //GetOpenOrders gets the current open orders
-func (c BTCMarketsClient) GetOpenOrders() (ccg.OrdersDetails, error) {
+func (c BTCMarketsClient) GetOpenOrders(Primary, Secondary string) (ccg.OrdersDetails, error) {
 	//TODO:FIX ME
-	return c.orderHistory("BTC", "AUD", 200, 0, 0)
+	return c.orderHistory(Primary, Secondary, 200, 33434568724, 0)
+	/*
+		function getOpenOrders(){
+			$.get("/data/trading/orders",function(data,status){
+				if(data.error!=null&&data.error.length>0){
+					console.log(data.error);
+					}else{
+						buildOrderList(data.orders);
+					}
+			});
+		}*/
 }
 
 //OrderDetailsRequest is the struct used to request the details for order(s)
