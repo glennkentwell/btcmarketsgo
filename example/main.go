@@ -24,7 +24,7 @@ func main() {
 	//got, err := client.GetOrderBook("BTC", "AUD")
 	//got, err := btcmarketsgo.BTCMarketsClient{}.GetOrderBook("ETH", "BTC")
 	//log.Info("Open orders output:")
-	got, err := client.OrdersDetails(800959830)
+	got, err := client.OrdersDetails(765500586)
 	//got, err := client.GetOpenOrders("BCH", "AUD")
 	print(got, err)
 	//Ticker example
