@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	ccg "github.com/RyanCarrier/cryptoclientgo"
+	ccg "github.com/glennkentwell/cryptoclientgo"
 )
 
 //TickResponse is the response recieved when requesting market tick
